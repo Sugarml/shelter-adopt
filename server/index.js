@@ -1,26 +1,31 @@
-// server/index.js
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
+const express = require("express");
+const cors = require("cors");
+const mongoose = require("mongoose");
+const animalRoutes = require("./routes/animals");
 
 const app = express();
+const PORT = 5000;
 
-// 中介層
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(express.json()); // 解析 JSON
-app.use(morgan('dev')); // 記錄 API 請求
+// middleware
+app.use(cors());
+app.use(express.json());
 
-// 範例路由
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    message: 'Express server is running',
-    timestamp: new Date()
-  });
+// 連接 MongoDB
+mongoose.connect("mongodb://127.0.0.1:27017/shelter-adopt", {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log("MongoDB connected"))
+.catch(err => console.error(err));
+
+// route
+app.use("/api/animals", animalRoutes);
+
+// 簡單 Health Check
+app.get("/api/health", (req, res) => {
+  res.json({ status: "OK", message: "Server running", timestamp: Date.now() });
 });
 
-// 啟動 server
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
